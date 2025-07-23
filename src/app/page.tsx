@@ -1,4 +1,5 @@
 "use client";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -10,13 +11,14 @@ import {
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ICompetition } from "@/models/competitions";
-import { TableEntry } from "@/models/standings";
+import { ICompetition, ISeason } from "@/models/competitions";
+import { IStanding } from "@/models/standings";
 import GetCompetitions from "@/services/competitions/GetCompetitions";
 import GetCompetitionStandings from "@/services/competitions/standings/GetCompetitionStandings";
 import Image from "next/image";
@@ -26,9 +28,10 @@ export default function Home() {
   const [competitions, setCompetitions] = useState<ICompetition[]>([]);
   const [selectedCompetition, setSelectedCompetition] =
     useState<ICompetition>();
-  const [standings, setStandings] = useState<TableEntry[]>([]);
+  const [standings, setStandings] = useState<IStanding[]>([]);
   const [standingsLoading, setStandingsLoading] = useState(false);
   const [seasonIsInProgress, setSeasonInProgress] = useState(false);
+  const [selectedSeason, setSelectedSeason] = useState<ISeason>({} as ISeason);
 
   const getCompetitions = useCallback(async () => {
     const response = await GetCompetitions();
@@ -43,13 +46,14 @@ export default function Home() {
     if (!response) return;
     setStandingsLoading(false);
     console.log("response", response);
-    setStandings(response.standings[0].table);
+    setStandings(response.standings);
     setSelectedCompetition(response.competition);
     setSeasonInProgress(
       response.season.currentMatchday
         ? response.season.currentMatchday > 1
         : false
     );
+    setSelectedSeason(response.season);
     console.log(response);
   };
 
@@ -117,7 +121,7 @@ export default function Home() {
               </div>
             ) : (
               selectedCompetition && (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 dark:bg-gradient-to-br dark:from-slate-100 dark:to-slate-600 rounded p-4">
                   <Image
                     src={selectedCompetition.emblem}
                     alt={selectedCompetition.name}
@@ -127,14 +131,14 @@ export default function Home() {
                     priority
                   />
                   <div>
-                    <h2 className="text-lg font-semibold">
+                    <h2 className="text-lg dark:text-secondary font-semibold">
                       {selectedCompetition.name}
                     </h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {/* {getSeasonsDate(
-                        selectedCompetition.currentSeason.startDate,
-                        selectedCompetition.currentSeason.endDate
-                      )} */}
+                    <p className="text-sm text-gray-900 capitalize">
+                      {getSeasonsDate(
+                        selectedSeason.startDate,
+                        selectedSeason.endDate
+                      )}
                     </p>
                   </div>
                 </div>
@@ -144,7 +148,7 @@ export default function Home() {
           <CardContent>
             {standingsLoading ? (
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="w-full">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]">Pos.</TableHead>
@@ -201,52 +205,81 @@ export default function Home() {
                 </Table>
               </div>
             ) : standings.length > 0 ? (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">Pos.</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Pts</TableHead>
-                      <TableHead>J</TableHead>
-                      <TableHead>V</TableHead>
-                      <TableHead>E</TableHead>
-                      <TableHead>D</TableHead>
-                      <TableHead>GP</TableHead>
-                      <TableHead>GC</TableHead>
-                      <TableHead>SG</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {standings.map((team) => (
-                      <TableRow key={team.team.id}>
-                        <TableCell className="font-medium">
-                          {team.position}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Image
-                              width={20}
-                              height={20}
-                              alt={team.team.name}
-                              src={team.team.crest}
-                              priority
-                            />
-                            {team.team.shortName}
-                          </div>
-                        </TableCell>
-                        <TableCell>{team.points}</TableCell>
-                        <TableCell>{team.playedGames}</TableCell>
-                        <TableCell>{team.won}</TableCell>
-                        <TableCell>{team.draw}</TableCell>
-                        <TableCell>{team.lost}</TableCell>
-                        <TableCell>{team.goalsFor}</TableCell>
-                        <TableCell>{team.goalsAgainst}</TableCell>
-                        <TableCell>{team.goalDifference}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <div className="overflow-x-auto flex flex-col gap-8">
+                {standings.map((standing, index) => (
+                  <div key={index} className="flex flex-col gap-4 divide-y-2">
+                    {standing.group && (
+                      <TableCaption>{standing.group}</TableCaption>
+                    )}
+                    <Table className="divider-y-2">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[50px]">Pos.</TableHead>
+                          <TableHead>Time</TableHead>
+                          <TableHead>Pts</TableHead>
+                          <TableHead>J</TableHead>
+                          <TableHead>V</TableHead>
+                          <TableHead>E</TableHead>
+                          <TableHead>D</TableHead>
+                          <TableHead>GP</TableHead>
+                          <TableHead>GC</TableHead>
+                          <TableHead>SG</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {standing.table.map((team, teamIndex) => (
+                          <TableRow
+                            key={team.team.id}
+                            className={
+                              seasonIsInProgress &&
+                              !standing.group &&
+                              teamIndex <= 3
+                                ? "bg-green-500/20"
+                                : teamIndex >= standing.table.length - 4 &&
+                                  seasonIsInProgress &&
+                                  !standing.group
+                                ? "bg-red-500/20"
+                                : selectedSeason.winner &&
+                                  selectedSeason.winner.shortName ===
+                                    team.team.shortName
+                                ? "bg-green-500/20"
+                                : ""
+                            }
+                          >
+                            <TableCell className="font-medium">
+                              {seasonIsInProgress ? team.position : "-"}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Image
+                                  width={20}
+                                  height={20}
+                                  alt={team.team.name}
+                                  src={team.team.crest}
+                                  priority
+                                />
+                                {team.team.shortName}
+                                {selectedSeason.winner &&
+                                  selectedSeason.winner.shortName ===
+                                    team.team.shortName && (
+                                    <Badge variant="secondary">Winner</Badge>
+                                  )}
+                              </div>
+                            </TableCell>
+                            <TableCell>{team.points}</TableCell>
+                            <TableCell>{team.playedGames}</TableCell>
+                            <TableCell>{team.won}</TableCell>
+                            <TableCell>{team.draw}</TableCell>
+                            <TableCell>{team.lost}</TableCell>
+                            <TableCell>{team.goalsFor}</TableCell>
+                            <TableCell>{team.goalsAgainst}</TableCell>
+                            <TableCell>{team.goalDifference}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ))}
               </div>
             ) : (
               <p className="text-center text-muted-foreground">
