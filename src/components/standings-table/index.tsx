@@ -1,4 +1,5 @@
 import useCompetitionsStore from "@/stores/competitions/useCompetitionsStore";
+import { colWidths } from "@/utils/colWidths";
 import Image from "next/image";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader } from "../ui/card";
@@ -68,19 +69,19 @@ export default function StandingsTable({
                 {standing.group && (
                   <TableCaption>{standing.group}</TableCaption>
                 )}
-                <Table className="divider-y-2">
+                <Table className="divider-y-2 table-fixed">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[50px]">Pos.</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Pts</TableHead>
-                      <TableHead>J</TableHead>
-                      <TableHead>V</TableHead>
-                      <TableHead>E</TableHead>
-                      <TableHead>D</TableHead>
-                      <TableHead>GP</TableHead>
-                      <TableHead>GC</TableHead>
-                      <TableHead>SG</TableHead>
+                      <TableHead className={colWidths[0]}>Pos.</TableHead>
+                      <TableHead className={colWidths[1]}>Time</TableHead>
+                      <TableHead className={colWidths[2]}>Pts</TableHead>
+                      <TableHead className={colWidths[3]}>J</TableHead>
+                      <TableHead className={colWidths[4]}>V</TableHead>
+                      <TableHead className={colWidths[5]}>E</TableHead>
+                      <TableHead className={colWidths[6]}>D</TableHead>
+                      <TableHead className={colWidths[7]}>GP</TableHead>
+                      <TableHead className={colWidths[8]}>GC</TableHead>
+                      <TableHead className={colWidths[9]}>SG</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -108,12 +109,12 @@ export default function StandingsTable({
                             : ""
                         }
                       >
-                        <TableCell className="font-medium">
+                        <TableCell className={`font-medium ${colWidths[0]}`}>
                           {state.selectedSeason && state.seasonIsInProgress
                             ? team.position
                             : "-"}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={colWidths[1]}>
                           <div className="flex items-center gap-2">
                             <Image
                               width={20}
@@ -131,14 +132,30 @@ export default function StandingsTable({
                               )}
                           </div>
                         </TableCell>
-                        <TableCell>{team.points}</TableCell>
-                        <TableCell>{team.playedGames}</TableCell>
-                        <TableCell>{team.won}</TableCell>
-                        <TableCell>{team.draw}</TableCell>
-                        <TableCell>{team.lost}</TableCell>
-                        <TableCell>{team.goalsFor}</TableCell>
-                        <TableCell>{team.goalsAgainst}</TableCell>
-                        <TableCell>{team.goalDifference}</TableCell>
+                        <TableCell className={colWidths[2]}>
+                          {team.points}
+                        </TableCell>
+                        <TableCell className={colWidths[3]}>
+                          {team.playedGames}
+                        </TableCell>
+                        <TableCell className={colWidths[4]}>
+                          {team.won}
+                        </TableCell>
+                        <TableCell className={colWidths[5]}>
+                          {team.draw}
+                        </TableCell>
+                        <TableCell className={colWidths[6]}>
+                          {team.lost}
+                        </TableCell>
+                        <TableCell className={colWidths[7]}>
+                          {team.goalsFor}
+                        </TableCell>
+                        <TableCell className={colWidths[8]}>
+                          {team.goalsAgainst}
+                        </TableCell>
+                        <TableCell className={colWidths[9]}>
+                          {team.goalDifference}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
