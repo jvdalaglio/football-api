@@ -1,13 +1,7 @@
 "use client";
+import Header from "@/components/header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -17,49 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ICompetition, ISeason } from "@/models/competitions";
-import { IStanding } from "@/models/standings";
-import GetCompetitions from "@/services/competitions/GetCompetitions";
-import GetCompetitionStandings from "@/services/competitions/standings/GetCompetitionStandings";
+import { useCompetitions } from "@/hooks/competitions/useCompetitions";
+import useCompetitionsStore from "@/stores/competitions/useCompetitionsStore";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
 
 export default function Home() {
-  const [competitions, setCompetitions] = useState<ICompetition[]>([]);
-  const [selectedCompetition, setSelectedCompetition] =
-    useState<ICompetition>();
-  const [standings, setStandings] = useState<IStanding[]>([]);
-  const [standingsLoading, setStandingsLoading] = useState(false);
-  const [seasonIsInProgress, setSeasonInProgress] = useState(false);
-  const [selectedSeason, setSelectedSeason] = useState<ISeason>({} as ISeason);
-
-  const getCompetitions = useCallback(async () => {
-    const response = await GetCompetitions();
-    if (!response) return;
-    setCompetitions(response.competitions);
-  }, []);
-
-  const getCompetitionStandings = async (competitionCode: string) => {
-    if (!competitionCode) return;
-    setStandingsLoading(true);
-    const response = await GetCompetitionStandings(competitionCode);
-    if (!response) return;
-    setStandingsLoading(false);
-    console.log("response", response);
-    setStandings(response.standings);
-    setSelectedCompetition(response.competition);
-    setSeasonInProgress(
-      response.season.currentMatchday
-        ? response.season.currentMatchday > 1
-        : false
-    );
-    setSelectedSeason(response.season);
-    console.log(response);
-  };
-
-  useEffect(() => {
-    getCompetitions();
-  }, [getCompetitions]);
+  const { getCompetitionStandings } = useCompetitions();
+  const { state } = useCompetitionsStore();
 
   const handleSelectCompetition = (competitionCode: string) => {
     getCompetitionStandings(competitionCode);
@@ -81,37 +39,12 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen p-4 md:p-8 bg-gray-100 dark:bg-gray-900">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-4">
-          Dashboard de Futebol
-        </h1>
-        <div className="flex items-center gap-4">
-          <label htmlFor="competition-select" className="sr-only">
-            Selecione a Competição
-          </label>
-          <Select onValueChange={handleSelectCompetition}>
-            <SelectTrigger
-              id="competition-select"
-              className="w-[240px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-50"
-            >
-              <SelectValue placeholder="Selecione a Competição" />
-            </SelectTrigger>
-            <SelectContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-50">
-              {competitions.map((comp) => (
-                <SelectItem key={comp.id} value={comp.id.toString()}>
-                  {comp.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </header>
-
+      <Header handleSelectCompetition={handleSelectCompetition} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
         {/* Tabela da Competição */}
         <Card className="lg:col-span-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-50 shadow-sm">
           <CardHeader>
-            {standingsLoading ? (
+            {state.loadingCompetitions ? (
               <div className="flex items-center gap-4">
                 <div className="w-[60px] h-[60px] bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                 <div>
@@ -120,11 +53,12 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              selectedCompetition && (
+              state.selectedCompetition &&
+              state.selectedSeason && (
                 <div className="flex items-center gap-4 dark:bg-gradient-to-br dark:from-slate-100 dark:to-slate-600 rounded p-4">
                   <Image
-                    src={selectedCompetition.emblem}
-                    alt={selectedCompetition.name}
+                    src={state.selectedCompetition.emblem}
+                    alt={state.selectedCompetition.name}
                     draggable={true}
                     width={60}
                     height={60}
@@ -132,12 +66,12 @@ export default function Home() {
                   />
                   <div>
                     <h2 className="text-lg dark:text-secondary font-semibold">
-                      {selectedCompetition.name}
+                      {state.selectedCompetition.name}
                     </h2>
                     <p className="text-sm text-gray-900 capitalize">
                       {getSeasonsDate(
-                        selectedSeason.startDate,
-                        selectedSeason.endDate
+                        state.selectedSeason.startDate,
+                        state.selectedSeason.endDate
                       )}
                     </p>
                   </div>
@@ -146,7 +80,7 @@ export default function Home() {
             )}
           </CardHeader>
           <CardContent>
-            {standingsLoading ? (
+            {state.loadingCompetitions ? (
               <div className="overflow-x-auto">
                 <Table className="w-full">
                   <TableHeader>
@@ -204,9 +138,9 @@ export default function Home() {
                   </TableBody>
                 </Table>
               </div>
-            ) : standings.length > 0 ? (
+            ) : state.standings.length > 0 ? (
               <div className="overflow-x-auto flex flex-col gap-8">
-                {standings.map((standing, index) => (
+                {state.standings.map((standing, index) => (
                   <div key={index} className="flex flex-col gap-4 divide-y-2">
                     {standing.group && (
                       <TableCaption>{standing.group}</TableCaption>
@@ -231,23 +165,30 @@ export default function Home() {
                           <TableRow
                             key={team.team.id}
                             className={
-                              seasonIsInProgress &&
+                              state.selectedSeason &&
+                              state.selectedSeason.currentMatchday &&
                               !standing.group &&
                               teamIndex <= 3
                                 ? "bg-green-500/20"
                                 : teamIndex >= standing.table.length - 4 &&
-                                  seasonIsInProgress &&
+                                  state.selectedCompetition &&
+                                  state.selectedSeason &&
+                                  state.selectedSeason.currentMatchday &&
                                   !standing.group
                                 ? "bg-red-500/20"
-                                : selectedSeason.winner &&
-                                  selectedSeason.winner.shortName ===
+                                : state.selectedCompetition &&
+                                  state.selectedSeason &&
+                                  state.selectedSeason.winner &&
+                                  state.selectedSeason.winner.shortName ===
                                     team.team.shortName
                                 ? "bg-green-500/20"
                                 : ""
                             }
                           >
                             <TableCell className="font-medium">
-                              {seasonIsInProgress ? team.position : "-"}
+                              {state.selectedSeason && state.seasonIsInProgress
+                                ? team.position
+                                : "-"}
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
@@ -259,8 +200,9 @@ export default function Home() {
                                   priority
                                 />
                                 {team.team.shortName}
-                                {selectedSeason.winner &&
-                                  selectedSeason.winner.shortName ===
+                                {state.selectedSeason &&
+                                  state.selectedSeason.winner &&
+                                  state.selectedSeason.winner.shortName ===
                                     team.team.shortName && (
                                     <Badge variant="secondary">Winner</Badge>
                                   )}
