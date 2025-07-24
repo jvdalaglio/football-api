@@ -17,7 +17,6 @@ interface ICompetitionsStoreActions {
   setStandings: (standings: IStanding[]) => void;
   setSelectedCompetition: (competition: ICompetition) => void;
   setSelectedSeason: (season: ISeason) => void;
-  setSeasonIsInProgress: () => void;
   setLoadingCompetitions: (loading: boolean) => void;
   setLoadingStandings: (loading: boolean) => void;
 }
@@ -51,17 +50,11 @@ const useCompetitionsStore = create<ICompetitionStore>((set) => ({
       })),
     setSelectedSeason: (season) =>
       set((store) => ({
-        state: { ...store.state, selectedSeason: season },
-      })),
-    setSeasonIsInProgress: () =>
-      set((store) => ({
         state: {
           ...store.state,
+          selectedSeason: season,
           seasonIsInProgress:
-            store.state.selectedSeason &&
-            store.state.selectedSeason.currentMatchday
-              ? store.state.selectedSeason.currentMatchday > 1
-              : false,
+            !!season.currentMatchday && season.currentMatchday > 1,
         },
       })),
   },

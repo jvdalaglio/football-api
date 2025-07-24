@@ -5,6 +5,7 @@ import { useCallback, useEffect } from "react";
 
 export interface IUseCompetitions {
   getCompetitionStandings: (code: string) => void;
+  getSeasonsDate: (startDate: string, endDate: string) => string;
 }
 
 export const useCompetitions = (): IUseCompetitions => {
@@ -22,21 +23,34 @@ export const useCompetitions = (): IUseCompetitions => {
   const getCompetitionStandings = useCallback(
     async (code: string) => {
       if (state.selectedCompetition?.id?.toString() === code) return;
-      actions.setLoadingCompetitions(true);
+      actions.setLoadingStandings(true);
       const response = await GetCompetitionStandings(code);
       if (!response) return;
       actions.setSelectedCompetition(response.competition);
       actions.setStandings(response.standings);
       actions.setSelectedSeason(response.season);
-      actions.setSeasonIsInProgress();
-      actions.setLoadingCompetitions(false);
+      actions.setLoadingStandings(false);
     },
     [state.selectedCompetition, actions]
   );
+
+  const getSeasonsDate = (startDate: string, endDate: string) => {
+    const startDateObj = new Date(startDate);
+    const endDateObj = new Date(endDate);
+    const startDateFormatted = startDateObj.toLocaleDateString("pt-BR", {
+      month: "long",
+      year: "numeric",
+    });
+    const endDateFormatted = endDateObj.toLocaleDateString("pt-BR", {
+      month: "long",
+      year: "numeric",
+    });
+    return `${startDateFormatted} - ${endDateFormatted}`;
+  };
 
   useEffect(() => {
     getCompetitions();
   }, []);
 
-  return { getCompetitionStandings };
+  return { getCompetitionStandings, getSeasonsDate };
 };
