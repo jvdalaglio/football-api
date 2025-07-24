@@ -9,29 +9,45 @@ export interface IUseCompetitions {
 }
 
 export const useCompetitions = (): IUseCompetitions => {
-  const { actions, state } = useCompetitionsStore();
+  const {
+    actions: {
+      setCompetitions,
+      setLoadingCompetitions,
+      setLoadingStandings,
+      setSelectedCompetition,
+      setStandings,
+      setSelectedSeason,
+    },
+    state,
+  } = useCompetitionsStore();
 
   const getCompetitions = useCallback(async () => {
     if (state.competitions.length > 0) return;
-    actions.setLoadingCompetitions(true);
+    setLoadingCompetitions(true);
     const response = await GetCompetitions();
-    actions.setLoadingCompetitions(false);
+    setLoadingCompetitions(false);
     if (!response) return;
-    actions.setCompetitions(response.competitions);
-  }, [state.competitions, actions]);
+    setCompetitions(response.competitions);
+  }, [state.competitions, setCompetitions, setLoadingCompetitions]);
 
   const getCompetitionStandings = useCallback(
     async (code: string) => {
       if (state.selectedCompetition?.id?.toString() === code) return;
-      actions.setLoadingStandings(true);
+      setLoadingStandings(true);
       const response = await GetCompetitionStandings(code);
       if (!response) return;
-      actions.setSelectedCompetition(response.competition);
-      actions.setStandings(response.standings);
-      actions.setSelectedSeason(response.season);
-      actions.setLoadingStandings(false);
+      setSelectedCompetition(response.competition);
+      setStandings(response.standings);
+      setSelectedSeason(response.season);
+      setLoadingStandings(false);
     },
-    [state.selectedCompetition, actions]
+    [
+      state.selectedCompetition,
+      setLoadingStandings,
+      setSelectedCompetition,
+      setStandings,
+      setSelectedSeason,
+    ]
   );
 
   const getSeasonsDate = (startDate: string, endDate: string) => {
@@ -50,7 +66,7 @@ export const useCompetitions = (): IUseCompetitions => {
 
   useEffect(() => {
     getCompetitions();
-  }, []);
+  }, [getCompetitions]);
 
   return { getCompetitionStandings, getSeasonsDate };
 };
