@@ -2,6 +2,7 @@ import GetCompetitions from "@/services/competitions/GetCompetitions";
 import GetCompetitionStandings from "@/services/competitions/standings/GetCompetitionStandings";
 import useCompetitionsStore from "@/stores/competitions/useCompetitionsStore";
 import { useCallback, useEffect } from "react";
+import useScorers from "./scorers/useScorers";
 
 export interface IUseCompetitions {
   getCompetitionStandings: (code: string) => void;
@@ -20,6 +21,7 @@ export const useCompetitions = (): IUseCompetitions => {
     },
     state,
   } = useCompetitionsStore();
+  const { getCompetitionScorers } = useScorers();
 
   const getCompetitions = useCallback(async () => {
     if (state.competitions.length > 0) return;
@@ -39,6 +41,7 @@ export const useCompetitions = (): IUseCompetitions => {
       setSelectedCompetition(response.competition);
       setStandings(response.standings);
       setSelectedSeason(response.season);
+      getCompetitionScorers(response.competition.code);
       setLoadingStandings(false);
     },
     [
@@ -47,6 +50,7 @@ export const useCompetitions = (): IUseCompetitions => {
       setSelectedCompetition,
       setStandings,
       setSelectedSeason,
+      getCompetitionScorers,
     ]
   );
 

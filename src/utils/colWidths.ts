@@ -1,12 +1,12 @@
 export const colWidths = [
-  "w-[50px] min-w-[50px] max-w-[50px]", // Pos.
-  "w-[180px] min-w-[120px] max-w-[220px]", // Time
-  "w-[40px] min-w-[40px] max-w-[50px]", // Pts
-  "w-[40px] min-w-[40px] max-w-[50px]", // J
-  "w-[40px] min-w-[40px] max-w-[50px]", // V
-  "w-[40px] min-w-[40px] max-w-[50px]", // E
-  "w-[40px] min-w-[40px] max-w-[50px]", // D
-  "w-[40px] min-w-[40px] max-w-[50px]", // GP
-  "w-[40px] min-w-[40px] max-w-[50px]", // GC
-  "w-[40px] min-w-[40px] max-w-[50px]", // SG
+  "w-12 min-w-[48px] text-xs md:text-sm", // Pos.
+  "min-w-[120px] text-xs md:text-sm", // Time
+  "w-10 min-w-[36px] text-xs md:text-sm", // Pts
+  "w-10 min-w-[36px] text-xs md:text-sm", // J
+  "w-10 min-w-[36px] text-xs md:text-sm", // V
+  "w-10 min-w-[36px] text-xs md:text-sm", // E
+  "w-10 min-w-[36px] text-xs md:text-sm", // D
+  "w-10 min-w-[36px] text-xs md:text-sm", // GP
+  "w-10 min-w-[36px] text-xs md:text-sm", // GC
+  "w-10 min-w-[36px] text-xs md:text-sm", // SG
 ];
