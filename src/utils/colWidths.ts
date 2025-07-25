@@ -1,5 +1,5 @@
 export const colWidths = [
-  "w-12 min-w-[48px] text-xs md:text-sm", // Pos.
+  "w-10 min-w-[48px] text-xs md:text-sm", // Pos.
   "min-w-[120px] text-xs md:text-sm", // Time
   "w-10 min-w-[36px] text-xs md:text-sm", // Pts
   "w-10 min-w-[36px] text-xs md:text-sm", // J
